@@ -73,3 +73,18 @@ Observed:
   including `DBImpl::ProcessLogFiles`,
   `DBImpl::WriteLevel0TableForRecovery`,
   and `TableCache::FindTable`.
+
+## CI result (GitHub Actions)
+
+Workflow: `Repro (Nix Devshell)`
+
+- `macos-14` (`darwin-aarch64`): only the first run reaches `READY`,
+  subsequent runs fail before `READY`.
+- `ubuntu-24.04` (`linux-x86_64`): all runs reach `READY`.
+
+You can inspect the latest run with:
+
+```bash
+gh run list --repo smissingham/rocksdb-cpp-sigtrap-repro --workflow "Repro (Nix Devshell)" --limit 1
+gh run watch <run-id> --repo smissingham/rocksdb-cpp-sigtrap-repro
+```
