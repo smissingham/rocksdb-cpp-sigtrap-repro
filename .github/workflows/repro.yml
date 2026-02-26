@@ -1,0 +1,64 @@
+name: Repro (Nix Devshell)
+
+on:
+  workflow_dispatch:
+    inputs:
+      runs:
+        description: Number of iterations
+        required: false
+        default: "30"
+      start_timeout_seconds:
+        description: Startup timeout seconds
+        required: false
+        default: "10"
+      ready_grace_seconds:
+        description: Ready grace seconds
+        required: false
+        default: "1"
+  push:
+    branches: [main]
+
+jobs:
+  repro:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: macos-14
+            label: darwin-aarch64
+            require_sigtrap_min: "1"
+          - os: ubuntu-24.04
+            label: linux-x86_64
+            require_sigtrap_min: "0"
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install Nix
+        uses: DeterminateSystems/nix-installer-action@v13
+
+      - name: Enable Nix cache
+        uses: DeterminateSystems/magic-nix-cache-action@v8
+
+      - name: Run repro loop
+        shell: bash
+        run: |
+          chmod +x ./repro.sh
+          RUNS="${{ github.event.inputs.runs || '30' }}" \
+          START_TIMEOUT_SECONDS="${{ github.event.inputs.start_timeout_seconds || '10' }}" \
+          READY_GRACE_SECONDS="${{ github.event.inputs.ready_grace_seconds || '1' }}" \
+          REQUIRE_SIGTRAP_MIN="${{ matrix.require_sigtrap_min }}" \
+          nix develop --command ./repro.sh
+
+      - name: Upload repro artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: repro-${{ matrix.label }}
+          path: |
+            run-*.log
+            db/LOG*
+          if-no-files-found: warn
