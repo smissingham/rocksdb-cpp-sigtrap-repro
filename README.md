@@ -74,6 +74,24 @@ Observed:
   `DBImpl::WriteLevel0TableForRecovery`,
   and `TableCache::FindTable`.
 
+## Reproduction matrix (macOS arm64)
+
+- `nixpkgs unstable` + packaged RocksDB `10.9.1`:
+  reproduces (`sigtrap` after first kill cycle).
+- `nixpkgs unstable` + local RocksDB `11.1.0`:
+  reproduces (`sigtrap` after first kill cycle).
+- `nixpkgs 24.11` + packaged RocksDB `9.7.3`:
+  does not reproduce (`killed` only, `sigtrap=0`).
+- `nixpkgs 24.11` + local RocksDB `11.1.0`:
+  does not reproduce (`killed` only, `sigtrap=0`).
+
+Observed toolchain/dependency deltas between those two nixpkgs sets:
+
+- Clang: unstable `21.1.8` vs `24.11` `16.0.6`
+- RocksDB package: unstable `10.9.1` vs `24.11` `9.7.3`
+- Snappy: unstable `1.2.2` vs `24.11` `1.2.1`
+- Zstd: unstable `1.5.7` vs `24.11` `1.5.6`
+
 ## CI result (GitHub Actions)
 
 Workflow: `Repro (Nix Devshell)`
